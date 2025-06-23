@@ -1,0 +1,73 @@
+# ==============================================================================
+#                      最终高质量训练配置文件
+# ==============================================================================
+#
+#   这是为最终生成高质量结果而优化的配置。
+#   基于我们此前的调试，此配置使用了稳定的`MLP_Fea`着色模式，
+#   并为您的`llff_json`数据集设置了合适的参数。
+#
+# ==============================================================================
+
+# --- 数据集配置 ---
+dataset_name = llff_json
+datadir = ./my_data/lego_dino
+expname = dino_final_quality
+basedir = ./log
+
+# --- 训练设置 ---
+# 30000次迭代以确保模型充分收敛
+n_iters = 30000 
+# 对于高分辨率图像，4096是一个合适的批大小
+batch_size = 4096
+# 使用完整的图像分辨率进行训练和测试
+downsample_train = 1.0 
+downsample_test = 1.0
+
+# --- 学习率设置 ---
+lr_init = 0.02
+lr_basis = 0.001
+lr_decay_iters = -1
+lr_decay_target_ratio = 0.1
+lr_upsample_reset = 1
+
+# --- 正则化权重 (用于提升模型质量) ---
+L1_weight_inital = 8e-5
+L1_weight_rest = 4e-5
+Ortho_weight = 0.0
+TV_weight_density = 0.0
+TV_weight_app = 0.0
+
+# --- 模型分辨率设置 ---
+# N_voxel_init: 初始分辨率 128^3
+# N_voxel_final: 最终分辨率 300^3 (这是高质量的关键)
+N_voxel_init = 2097152
+N_voxel_final = 27000000
+
+# --- 模型分辨率提升（上采样）计划 ---
+# 在这些迭代点，模型会变得更精细，以学习更多细节
+upsamp_list = [2000, 3000, 4000, 5500, 7000]
+update_AlphaMask_list = [4000, 8000]
+
+# --- 渲染器和特征设置 ---
+# 关键修复：使用我们在调试中验证过的稳定着色模式
+shadingMode = MLP_Fea
+pos_pe = 6
+view_pe = 6
+fea_pe = 6
+featureC = 128
+data_dim_color = 27
+
+# --- 渲染/评估设置 ---
+# 每隔10000次迭代保存5张可视化图片，用于监控训练进程
+N_vis = 5
+vis_every = 10000
+# 训练结束后，自动渲染测试集以供评估
+render_test = 1
+
+n_lamb_sigma = [16,16,16]
+n_lamb_sh = [48,48,48]
+model_name = TensorVMSplit
+
+fea2denseAct = softplus
+
+rm_weight_mask_thre = 1e-4 
